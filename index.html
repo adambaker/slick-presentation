@@ -1,338 +1,193 @@
 <!doctype html>
 <html lang="en">
-
-	<head>
-		<meta charset="utf-8">
-
-		<title>reveal.js - The HTML Presentation Framework</title>
-
-		<meta name="description" content="A framework for easily creating beautiful presentations using HTML">
-		<meta name="author" content="Hakim El Hattab">
-
-		<meta name="apple-mobile-web-app-capable" content="yes" />
-		<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-
-		<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-
-		<link rel="stylesheet" href="css/reveal.min.css">
+  <head>
+    <meta charset="utf-8">
+    <title>reveal.js - The HTML Presentation Framework</title>
+    <meta name="description" content="A framework for easily creating beautiful presentations using HTML">
+    <meta name="author" content="Hakim El Hattab">
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <link rel="stylesheet" href="css/reveal.min.css">
     <link rel="stylesheet" href="css/theme/serif.css" id="theme">
-
-		<!-- For syntax highlighting -->
-		<link rel="stylesheet" href="lib/css/zenburn.css">
-
-		<!-- If the query includes 'print-pdf', use the PDF print sheet -->
-		<script>
-			document.write( '<link rel="stylesheet" href="css/print/' + ( window.location.search.match( /print-pdf/gi ) ? 'pdf' : 'paper' ) + '.css" type="text/css" media="print">' );
-		</script>
+    <!-- For syntax highlighting -->
+    <link rel="stylesheet" href="lib/css/zenburn.css">
+    <!-- If the query includes 'print-pdf', use the PDF print sheet -->
+    <script>
+      document.write( '<link rel="stylesheet" href="css/print/' + ( window.location.search.match( /print-pdf/gi ) ? 'pdf' : 'paper' ) + '.css" type="text/css" media="print">' );
+    </script>
 
     <style>
       .reveal h1 { font-size: 2.5em; }
     </style>
-		<!--[if lt IE 9]>
-		<script src="lib/js/html5shiv.js"></script>
-		<![endif]-->
-	</head>
-
-	<body>
-
-		<div class="reveal">
-
-			<!-- Any section element inside of this container is displayed as a slide -->
+    <!--[if lt IE 9]>
+    <script src="lib/js/html5shiv.js"></script>
+    <![endif]-->
+  </head>
+  <body>
+    <div class="reveal">
+      <!-- Any section element inside of this container is displayed as a slide -->
       <div class="slides">
         <section>
-          <h1>Type Classes in Scala</h1>
+          <h1>A slapdash intro to Slick</h1>
           <br>
-          <h2>The Origins <br>The Motivation <br>The Pattern</h2>
+          <h4>Or, how I learned to stop worrying and love the for</h4>
         </section>
 
         <section>
-          <h2>The origins: type classes in Haskell</h2>
-          <h3>Start with an oridinary type system</h3>
-          <ul>
-            <li>Base types:<br> <code>3 :: Int</code><br> <code>'c' :: Char</code></li>
-            <li class='fragment'>Function type:<br> <code>chr :: Int -> Char</code></li>
-            <li class='fragment'>
-              Parametric polypmorphism:<br>
-              <code><pre>
-map :: (a -> b) -> ([a] -> [b])
-              </pre></code>
-            </li>
-          </ul>
+          <h2>Slick is FRM</h2>
+          <div>It's:</div>
+          <div class='fragment'>A DSL for generating and executing SQL</div>
+          <div class='fragment'>That statically checks the types of your SQL</div>
+          <div class='fragment'>With a monad for describing SELECTs</div>
+          <div class='fragment'>And a different monad for combining queries
+          into transactions</div>
         </section>
 
         <section>
-          <h2>Type classes in Haskell</h2>
-          <br>
-          <div>
-            What about summing all the elements of a list?
-          </div>
-          <div class="fragment"></div>
-          <br>
-        </section>
-
-        <section>
-          <h2>Invariants!</h2>
-          <br>
-          <div>An old idea in computer science</div>
-          <br>
-          <div>
-            <ul>
-              <li class="fragment">Preconditions and Postconditions</li>
-              <li class="fragment">Loop Invariants</li>
-            </ul>
-          </div>
-          <br>
-          <div class="fragment">Usually expressed in a functional language</div>
-        </section>
-        <section>
-          <h2>The Strategy</h2>
-          <ol>
-            <li> Define generators
-            <li class='fragment'> Identify invariants
-            <li class='fragment'> Convert to Claire property
-            <li class='fragment'> Test property on generated data
-            <li class='fragment'> ...
-            <li class='fragment'> No more bugs!
-          </ol>
-        </section>
-
-      <section>
-        <h2>Generators, Properties, Tests</h2>
-        <div>
-          <pre><code class='javascript'>
-var claire = require('claire')
-var _ = claire.data
-
-                  //two generators, Int and Num
-var commutativity = claire.forAll(_.Int, _.Num)
-  .satisfy(function(integer, real){  //the property being tested
-    return integer+real === real+integer
-  }).asTest() //returns a function
-
-//use it in mocha
-describe('addition', function(){
-  it('is commutative', commutativity)
-})
-
-//or invoke it to see the results
-commutativity() //passes silently
+          <h2>What's it like</h2>
+          Start with a table:
+          <pre><code class="scala">
+class Coffees(tag: Tag) extends Table[(String, Double)](tag, "COFFEES") {
+  def name = column[String]("COF_NAME")
+  def price = column[Double]("PRICE")
+  def * = (name, price)
+}
+val coffees = TableQuery[Coffees]
           </code></pre>
-        </div>
-      </section>
+          <div class="fragment">
+            Insert some values:
+            <pre><code class="scala">
+val insertActions = DBIO.seq(
+  coffees += ("Colombian", 101, 7.99, 0, 0),
 
-      <section>
-        <h2>Diagnosing Properties</h2>
-        <br>
-      <div>
-      <pre><code>var sorted_p = forAll( _.Array(_.Int) )
-        .satisfy(function(xs) {
-          xs = sorted(xs)
-          return xs.every(function(a, i) {
-            return i == 0 || a &gt;= xs[i - 1]
-          })
-        }).classify(function(xs) {
-          return xs.length == 0 || xs.length == 1?  'trivial' : '&gt; 1'
-        }).asTest({verbose: true, times: 1000})()</code><code>
-      //  + OK passed 1000 tests.
-      //  &gt; Collected test data:
-      //      o 98% - &gt; 1
-      //      o 2% - trivial
+  coffees ++= Seq(
+    ("French_Roast", 49, 8.99, 0, 0),
+    ("Espresso",    150, 9.99, 0, 0))
+)
+            </code></pre>
+          </div>
+        </section>
 
-      </code></pre>
+        <section>
+          <h2>You can get the id back on your assert too</h2>
+          <pre><code class="scala">
+//table users has an auto increment id, first name, and last name
+val userId: DBIOAction[Int, NoStream, Write] =
+  (users returning users.map(_.id)) += (None, "Stefan", "Zeiger")
+          </code></pre>
+          <div class="fragment">
+            <b>Pain Point #1</b> be very careful with the syntax. The type error
+            you will get if you change the grouping not friendly at all.
+          </div>
+        </section>
+        <section>
+          <h2>DBIOActions are monadic</h2>
+          <pre><code class="scala">
+val grandOldDuke = for {
+  //march our user up the database
+  id &lt;- (users returning users.map(_.id)) += (None, "Stefan", "Zeiger")
+  //and march him back down again
+  users.filter( _.id === id ).delete
+} yield id
+val usedId: Future[Int] = dbconnection.run(grandOldDuke.transactionally)
+          </code></pre>
+        </section>
+        <section>
+          <h2>What about queries?</h2>
+          They make a pretty cool monad too.
+          <pre class='fragment'><code class='scala'>
+val q: Query[(Repr[String], Repr[String]), (String, String), Seq] = (for {
+  c &lt;- coffees
+  s &lt;- suppliers
+  if(s.id === c.supplier)
+} yield (c.name, s.name)).sortBy(_.name.desc).drop(2).take(10)
+//Equivalent to
+//select c.name, s.name from coffees as c, suppliers as s
+//where c.supplier = s.id order by name desc limit 10 offset 2
+          </code></pre>
+          <div class="fragment">
+            Get the DBIOAction to run by saying <code>q.result</code>
+          </div>
+        </section>
+
+        <section>
+        <h2>Let's look at a bigger example</h2>
+        </section>
+
+        <section>
+          <h2>Logging</h2>
+          <div>
+            <b>Pain point #2</b>
+            Slick gets brutally chatty if you somehow set the log level to debug.
+            Fortunately, folks on SO have figured out how to shut it up with
+            various logging libraries, eg
+            <a href="https://stackoverflow.com/questions/41289210/silence-slick-logging">
+              https://stackoverflow.com/questions/41289210/silence-slick-logging</a>
+          </div>
+          <div class="fragment">Thanks K3</div>
+        </section>
+
+        <section>
+          <h2>Schema code gen</h2>
+          Slick has a code generator that can read your db's schema and generate
+          all the table description objects and row objects for your schema.
+          <pre class="fragment"><code class="scala">
+lazy val genTables = TaskKey[Unit]("gen-tables")
+lazy val slickCodeGenTask = (sourceManaged,
+  dependencyClasspath in Compile,
+  runner in Compile,
+  streams) map { (dir, cp, r, s) =&gt;
+    toError(r.run("slick.codegen.SourceCodeGenerator", cp.files, Array(
+      "slick.driver.PostgresDriver", "org.postgresql.Driver",
+      "jdbc:postgresql://localhost:5432/dataanalysttool",
+      "src/main/scala", "com.workday.search.relevance.database"
+    ), s.log))
+  }
+libraryDependencies += "com.typesafe.slick" %% "slick-codegen" % "3.1.1"
+genTables &lt;&lt;= slickCodeGenTask
+          </code></pre>
+        </section>
+
+        <section>
+          <h2>TTFN</h2>
+          That's the basics, along with a few things that caused me to pull my
+          hair out. May you fare better.
+        </section>
+
       </div>
-      </section>
+    </div>
 
-      <section>
-        <h2>A Simple Example</h2>
-        <div>From a real app</div>
-        <div>To the command line!</div>
-      </section>
+    <script src="lib/js/head.min.js"></script>
+    <script src="js/reveal.min.js"></script>
 
-      <section>
-        <h2>Generators from a more complex example</h2>
+    <script>
 
-        <code><pre>function modelObjGen(className, attrGens) {
-  return claire.label(className)(function() {
-    var attr, attrs, gen;
+      // Full list of configuration options available here:
+      // https://github.com/hakimel/reveal.js#configuration
+      Reveal.initialize({
+      controls: true,
+      progress: true,
+      history: true,
+      center: true,
 
-    attrs = {};
-    for (attr in attrGens) {
-      gen = attrGens[attr];
-      attrs[attr] = gen.next().value;
-    }
-    return new App.Models[className](attrs);
-  });
-};
+      theme: Reveal.getQueryHash().theme, // available themes are in /css/theme
+      transition: 'linear', // default/cube/page/concave/zoom/linear/fade/none
 
-        </code></pre>
-      </section>
+      // Optional libraries used to extend on reveal.js
+      dependencies: [
+      { src: 'lib/js/classList.js', condition: function() { return !document.body.classList; } },
+      { src: 'plugin/markdown/marked.js', condition: function() { return !!document.querySelector( '[data-markdown]' ); } },
+      { src: 'plugin/markdown/markdown.js', condition: function() { return !!document.querySelector( '[data-markdown]' ); } },
+      { src: 'plugin/highlight/highlight.js', async: true, callback: function() { hljs.initHighlightingOnLoad(); } },
+      { src: 'plugin/zoom-js/zoom.js', async: true, condition: function() { return !!document.body.classList; } },
+      { src: 'plugin/notes/notes.js', async: true, condition: function() { return !!document.body.classList; } }
+      // { src: 'plugin/search/search.js', async: true, condition: function() { return !!document.body.classList; } }
+      // { src: 'plugin/remotes/remotes.js', async: true, condition: function() { return !!document.body.classList; } }
+      ]
+      });
 
-      <section>
-        <h2>Generators from a more complex example</h2>
+    </script>
 
-        <code><pre>var SpecialItem = classObjGen('SpecialItem', {
-  type: claire.choice('Feedback', 'ContactForm', 'Document'),
-  info: gens.resize(5, ObjectGen(Any))
-});
-
-var Video = classObjGen('Video', {
-  youTubeId: claire.frequency([1, Nothing], [9, Id])
-});
-
-var Item = claire.label('Item', claire.choice(SpecialItem, Video));
-
-var Unit = classObjGen('Unit', {
-  items: gens.resize(6, ArrayGen(Item))
-});
-        </code></pre>
-      </section>
-
-      <section>
-        <h2>Properties of Addition and Multiplication</h2>
-        <div>
-          <ul>
-            <li>associativity: (a+b)+c = a+(b+c)</li>
-            <li>commutativity: a+b = b+a</li>
-            <li>identity: a+0 = a</li>
-            <li>closure: ∀ a,b ∈ ℤ. (a+b) ∈ ℤ</li>
-          </ul>
-          <br><br>
-          <div class='fragment'>Test with Int, Num, and BigInt<br>
-          for both addition and multiplication</div>
-          <br>
-          <div class='fragment'>Which ones fail?</div>
-        </div>
-      </section>
-
-      <section>
-        <h2>Properties of Addition and Multiplication</h2>
-        <br>
-        <div>Two failures:</div>
-        <br>
-        <div class='fragment'>Num fails associativity of multiplication</div>
-        <div class='fragment'>BigInt fails associativity of addition</div>
-        <br>
-        <div class='fragment'>The Point: Claire makes it easy to test boundary conditions
-        and find corner cases.</div>
-      </section>
-
-      <section>
-        <h2>A Look Inside</h2>
-        <div>Some basic generators:</div>
-        <br>
-        <pre><code>
-char = String.from-char-code
-
-### -- Primitive data types --------------------------------------------
-Null      = as-generator null
-Undefined = as-generator void
-Bool      = choice true, false
-Num       = label 'num'  ((s) -> choose -s, s)
-Byte      = label 'byte' ((_) -> to-integer (choose 0, 255))
-Char      = label 'char' (transform char, Byte)
-Str       = label 'str'  (transform join, (repeat Char))
-        </code></pre>
-      </section>
-
-      <section>
-        <h2>Container Type Generators</h2>
-        <br>
-      <pre><code>
-### -- Container data types -------------------------------
-List = (...as) -> repeat (choice ...as)
-Map  = (...as) -> transform to-object, (
-                    repeat (sequence Id, (choice ...as))
-                  )
-
-#### λ to-object
-# :internal:
-# Folds a list of pairs into an object.
-#
-# :: [String, a] -> { String -> a }
-to-object = (as) -> as.reduce ((r, [k,v]) -> r <<< { "#k": v }), {}
-
-      </code></pre>
-      </section>
-
-      <section>
-        <h2>For the FP geeks</h2>
-        Claire's generators are monads: <br><br>
-        <code>claire.transform</code> acts as <code>fmap</code><br>
-        <code>.then</code> method on generators acts as monadic bind
-      </section>
-
-      <section>
-        <h2>What's in the Future?</h2>
-        <br><br>
-        <div>
-          <ol>
-            <li>Shrinking of counterexamples.</li>
-            <li class='fragment'>Generators based on generic lazy linked lists</li>
-            <li class='fragment'>Asynchronous tests</li>
-          </ol>
-        </div>
-      </section>
-
-      <section>
-        <h2>Why is this important?</h2>
-        <br>
-        <ul>
-          <li>Automated teting is important.
-          <li class='fragment'>XUnit testing automates test running.
-          <li class='fragment'>Propery based testing automates test generation.
-          <li class='fragment'>Shrinking will help automate the first step in debugging.
-          <li class='fragment'>Your confidence grows each time you run your test suite.
-          <li class='fragment'>Random data (often) finds corners better than I do.
-        </ul>
-      </section>
-
-      <section>
-        <h2>Thanks</h2>
-        <br>
-        <div>install:</div>
-        <code>npm install claire</code>
-        <br><br>
-        <div>github:</div>
-        <a href="https://github.com/killdream/claire">https://github.com/killdream/claire</a>
-        <br><br>
-        <a href="http://www.youtube.com/watch?v=XgasxJWgZBM">
-          Functional Programming: A Secret Weapon for Software Testing
-        </a><br>
-        a talk on QuickCheck by John Hughes.
-      </section>
-
-		</div>
-
-		<script src="lib/js/head.min.js"></script>
-		<script src="js/reveal.min.js"></script>
-
-		<script>
-
-			// Full list of configuration options available here:
-			// https://github.com/hakimel/reveal.js#configuration
-			Reveal.initialize({
-				controls: true,
-				progress: true,
-				history: true,
-				center: true,
-
-				theme: Reveal.getQueryHash().theme, // available themes are in /css/theme
-				transition: 'linear', // default/cube/page/concave/zoom/linear/fade/none
-
-				// Optional libraries used to extend on reveal.js
-				dependencies: [
-					{ src: 'lib/js/classList.js', condition: function() { return !document.body.classList; } },
-					{ src: 'plugin/markdown/marked.js', condition: function() { return !!document.querySelector( '[data-markdown]' ); } },
-					{ src: 'plugin/markdown/markdown.js', condition: function() { return !!document.querySelector( '[data-markdown]' ); } },
-					{ src: 'plugin/highlight/highlight.js', async: true, callback: function() { hljs.initHighlightingOnLoad(); } },
-					{ src: 'plugin/zoom-js/zoom.js', async: true, condition: function() { return !!document.body.classList; } },
-					{ src: 'plugin/notes/notes.js', async: true, condition: function() { return !!document.body.classList; } }
-					// { src: 'plugin/search/search.js', async: true, condition: function() { return !!document.body.classList; } }
-					// { src: 'plugin/remotes/remotes.js', async: true, condition: function() { return !!document.body.classList; } }
-				]
-			});
-
-		</script>
-
-	</body>
+  </body>
 </html>
